@@ -1,0 +1,127 @@
+//
+//  ViewController.m
+//  Notifications
+//
+//  Created by Aaron Crabtree on 5/3/12.
+//  Copyright (c) 2012 Tap Dezign, LLC. All rights reserved.
+
+/*--
+ 
+ THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTY OF ANY KIND, 
+ EXPRESS OR IMPLIED,INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS 
+ OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN 
+ AN ACTION OF CONTRACT,TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH 
+ THE USE OF THIS CODE OR ANY OTHER DEALINGS RELATING TO THIS SOFTWARE.
+ 
+ --*/
+
+#import "ViewController.h"
+
+#pragma mark _
+#pragma mark Private Interface
+@interface ViewController ()
+
+    //custom method declarations to post and use the notification
+
+- (void)postNotificationWithString:(NSString *)orientation;
+- (void)useNotificationWithString:(NSNotification*)notification;
+
+@end
+
+@implementation ViewController
+
+#pragma mark -
+#pragma mark Memory Management Methods
+- (void)dealloc 
+{
+    //remove the observer when the object is deallocated
+    
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
+}
+
+#pragma mark -
+#pragma Post & Receive NSNotification Methods
+- (void)postNotificationWithString:(NSString *)orientation //post notification method and logic
+{
+    /*--
+     * Prefixing a notification name with a unique identifier, 
+       such as 'MT' for MobileTuts, reduces the chances of a message name conflict.
+     * Be sure to use a unique and description name for the dictionary's key. 
+     --*/
+    
+    NSString *notificationName = @"MTPostNotificationTut";
+    NSString *key = @"OrientationStringValue";
+    NSDictionary *dictionary = [NSDictionary dictionaryWithObject:orientation forKey:key];
+    [[NSNotificationCenter defaultCenter] postNotificationName:notificationName object:nil userInfo:dictionary];
+}
+
+- (void)useNotificationWithString:(NSNotification *)notification //use notification method and logic
+{
+    // This key must match the key in postNotificationWithString: exactly.
+    
+    NSString *key = @"OrientationStringValue";
+    NSDictionary *dictionary = [notification userInfo];
+    NSString *stringValueToUse = [dictionary valueForKey:key];
+    NSLog(@"Device orientation --> %@",stringValueToUse);
+    
+}
+
+#pragma mark -
+#pragma mark UIViewController Override Methods
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+	
+    /*--
+     * Prefixing a notification name with a unique identifier, 
+       such as 'MT' for MobileTuts, reduces the chances of a message name conflict.
+     * Registering as an observer allows the object to receive notifications. 
+     --*/
+    
+    NSString *notificationName = @"MTPostNotificationTut"; 
+    
+    [[NSNotificationCenter defaultCenter] 
+     addObserver:self 
+     selector:@selector(useNotificationWithString:) 
+	 name:notificationName
+	 object:nil];
+    
+    [UIFont fontWithName:@"Arial" size:13];
+    lbl.text = @"Welcome to softcraft systems";
+    lbl.backgroundColor=[UIColor orangeColor];
+}
+
+#pragma mark -
+#pragma mark UIViewController Rotation Methods
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+}
+
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation duration:(NSTimeInterval)duration
+{
+     // Overriding this method allows a notification to be posted when the device is rotated.
+    
+	if (interfaceOrientation == UIInterfaceOrientationPortrait)
+    {
+        [self postNotificationWithString:@"Portrait"];
+        lbl.frame = CGRectMake((self.view.frame.size.width-lbl.frame.size.width)/2,(self.view.frame.size.height-lbl.frame.size.height)/2,lbl.frame.size.width,20);  //your landscape frame
+        lbl.text = @"Welcome to softcraft systems";
+        lbl.backgroundColor=[UIColor greenColor];
+
+	}
+	else
+    {
+        [self postNotificationWithString:@"Landscape"];
+        lbl.frame = CGRectMake(153,150,lbl.frame.size.width,20); // your portrait frame
+        lbl.text = @"Welcome to softcraft systems";
+        lbl.backgroundColor=[UIColor redColor];
+
+	}
+    
+   
+}
+
+@end
